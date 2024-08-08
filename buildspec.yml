@@ -1,22 +1,64 @@
-artifacts:
-  base-directory: front-end-react/build
-  discard-paths: 'no'
-  files:
-  - '**/*'
+version: 0.2
+
+env:
+  variables:
+    UNIQUE_BUCKET_NAME: "satsimon25031981-trivia-app-bucket"
+    GIT_USER_NAME: "chinonsosimon"
+    GIT_USER_EMAIL: "chinonso.simon@gmail.com"
+
 phases:
-  build:
-    commands:
-    - cd front-end-react && npm run build && cd ..
   install:
     commands:
-    - cd front-end-react && npm install && cd ..
-    runtime-versions:
-      nodejs: '16'
-  post_build:
-    commands:
-    - echo Build completed successfully.
+      - echo "Installing necessary tools..."
+      - nvm install lts/gallium
+      - nvm alias default lts/gallium
+      - npm install -g aws-sam-cli
+      - npm install -g aws-cli
+      - echo "Tools installed successfully."
+    
   pre_build:
     commands:
-    - cd front-end-react && npm test && cd ..
-version: '0.2'
- 
+      - echo "Setting up environment..."
+      - unzip -o ~/trivia-app.zip
+      - cd trivia-app
+      - echo "Environment setup completed."
+    
+  build:
+    commands:
+      - echo "Building and deploying the backend infrastructure..."
+      - sam build
+      - sam deploy --stack-name trivia-app --region us-west-2 --confirm-changeset --capabilities CAPABILITY_IAM
+      - echo "Backend deployed successfully."
+      - cd front-end-react
+      - npm install
+      - echo "Building frontend..."
+      - npm run build
+      - echo "Frontend built successfully."
+
+  post_build:
+    commands:
+      - echo "Deploying frontend to S3..."
+      - cd ..
+      - aws s3 mb s3://$UNIQUE_BUCKET_NAME/
+      - aws s3 sync --acl public-read front-end-react/build s3://$UNIQUE_BUCKET_NAME/
+      - echo "Frontend deployed to S3 successfully."
+      - echo "Configuring and committing to AWS CodeCommit..."
+      - git config --global user.name "$GIT_USER_NAME"
+      - git config --global user.email $GIT_USER_EMAIL
+      - git init
+      - git checkout -b main
+      - git add .
+      - git commit -m "Initial commit"
+      - git remote add origin codecommit://trivia-app
+      - git push origin main
+      - echo "Code committed to AWS CodeCommit successfully."
+
+artifacts:
+  files:
+    - '**/*'
+
+cache:
+  paths:
+    - 'node_modules/**/*'
+
+
