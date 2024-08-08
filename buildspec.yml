@@ -1,24 +1,22 @@
 artifacts:
-  base-directory: frontend/build
+  base-directory: front-end-react/build
   discard-paths: 'no'
   files:
   - '**/*'
-cache:
-  paths:
-  - frontend/node_modules/**/*
 phases:
   build:
     commands:
-    - cd frontend && npm run build && cd ..
+    - cd front-end-react && npm run build && cd ..
   install:
     commands:
-    - cd frontend && npm install && cd ..
+    - cd front-end-react && npm install && cd ..
     runtime-versions:
-      nodejs: '14'
+      nodejs: '16'
   post_build:
     commands:
     - echo Build completed successfully.
   pre_build:
     commands:
-    - cd frontend && npm test && cd ..
+    - cd front-end-react && npm test && cd ..
 version: '0.2'
+ 
