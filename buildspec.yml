@@ -8,10 +8,10 @@ env:
 
 phases:
   install:
+    runtime-versions:
+      nodejs: 16  # Specify the version of Node.js directly
     commands:
       - echo "Installing necessary tools..."
-      - nvm install lts/gallium
-      - nvm alias default lts/gallium
       - npm install -g aws-sam-cli
       - npm install -g aws-cli
       - echo "Tools installed successfully."
@@ -56,9 +56,5 @@ phases:
 artifacts:
   files:
     - '**/*'
-
-cache:
-  paths:
-    - 'node_modules/**/*'
 
 
